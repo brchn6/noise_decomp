@@ -1,2 +1,0 @@
-[console_scripts]
-noise-decomp = noise_decomp.cli:main
