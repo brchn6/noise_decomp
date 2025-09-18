@@ -38,6 +38,18 @@ noise-decomp --rfile path/to/r.csv --gfile path/to/g.csv
 Use `--no-normalize` to disable mean normalization and `--ddof` to set the delta degrees of freedom for variance/covariance.
 
 ---
+## Cython (fast) extension
+
+To build the Cython extension for best performance:
+
+```bash
+pip install cython numpy
+python build_cython.py
+```
+
+The Python API will automatically use the fast Cython backend if available.
+
+---
 ## Examples
 Run the tiny demo script:
 

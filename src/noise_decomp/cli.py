@@ -69,7 +69,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         p.error(f"Failed to read inputs: {exc}")
 
     try:
-        res = ndfunc(r, g, normalize_means=args.normalize, ddof=args.ddof)
+        # Determine normalization mode
+        if hasattr(args, 'normalize') and args.normalize is False:
+            norm_mode = "none"
+        else:
+            norm_mode = "match_means"
+        res = ndfunc(r, g, normalize=norm_mode, ddof=args.ddof)
     except Exception as exc:
         p.error(f"Computation failed: {exc}")
 
