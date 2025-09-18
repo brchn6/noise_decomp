@@ -20,7 +20,7 @@ except ImportError:
     _HAVE_CYTHON = False
 
 def _to_np(x: ArrayLike) -> np.ndarray:
-    a = np.asarray(list(x), dtype=float).ravel()
+    a = np.asarray(x, dtype=float).ravel()
     if a.size == 0:
         raise ValueError("Input array is empty.")
     return a

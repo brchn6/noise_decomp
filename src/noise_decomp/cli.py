@@ -24,14 +24,21 @@ def _parse_list(s: str) -> List[float]:
 
 
 def _read_values_from_file(path: str) -> np.ndarray:
-    # Try numpy loadtxt (CSV or whitespace-separated). Fall back to eval of string.
     try:
+        # whitespace-separated (default) first
+        arr = np.loadtxt(path)
+        return np.atleast_1d(arr).astype(float)
+    except Exception:
+        pass
+    try:
+        # then try CSV explicitly
         arr = np.loadtxt(path, delimiter=",")
         return np.atleast_1d(arr).astype(float)
     except Exception:
-        # last resort: read file and parse comma-separated
+        # last resort: tolerant parser
         txt = open(path, "r").read().strip()
-        return np.asarray([float(x) for x in txt.replace("\n", ",").split(",") if x.strip() != ""])  # type: ignore
+        tokens = txt.replace("\n", " ").replace(",", " ").split()
+        return np.asarray([float(x) for x in tokens])
 
 
 def _print_results(res: dict) -> None:
@@ -51,41 +58,41 @@ def main(argv: Sequence[str] | None = None) -> int:
     grp2.add_argument("--g", help="comma-separated values for reporter G (e.g. 1.1,2.1,3.1)", type=_parse_list)
     grp2.add_argument("--gfile", help="path to file with reporter G values (csv or whitespace separated)")
     p.add_argument("--no-normalize", dest="normalize", action="store_false", help="do not normalize reporter means")
-    p.add_argument("--ddof", type=int, default=0, help="delta degrees of freedom passed to variance/covariance computations (default: 0)")
+    p.add_argument("--ddof", type=int, default=1, help="delta degrees of freedom passed to variance/covariance computations (default: 1)")
     p.add_argument("--quiet", "-q", action="store_true", help="only print JSON result")
+    p.add_argument("--norm", choices=["match_means","ols","none"], help="normalization mode (overrides --no-normalize)")
+    p.add_argument("--clip-nonneg", action="store_true", help="clip negative η² to 0 in the output")
     args = p.parse_args(argv)
 
     try:
         if args.r is not None:
             r = np.asarray(args.r, dtype=float)
+        elif args.rfile:
+            r = _read_values_from_file(args.rfile)
         else:
-            r = _read_values_from_file(args.rfile)  # type: ignore[arg-type]
-
+            raise ValueError("Must provide --r or --rfile")
         if args.g is not None:
             g = np.asarray(args.g, dtype=float)
+        elif args.gfile:
+            g = _read_values_from_file(args.gfile)
         else:
-            g = _read_values_from_file(args.gfile)  # type: ignore[arg-type]
-    except Exception as exc:
-        p.error(f"Failed to read inputs: {exc}")
-
-    try:
-        # Determine normalization mode
-        if hasattr(args, 'normalize') and args.normalize is False:
-            norm_mode = "none"
+            raise ValueError("Must provide --g or --gfile")
+        if args.norm:
+            norm_mode = args.norm
         else:
-            norm_mode = "match_means"
-        res = ndfunc(r, g, normalize=norm_mode, ddof=args.ddof)
-    except Exception as exc:
-        p.error(f"Computation failed: {exc}")
-
-    if args.quiet:
-        # print compact JSON
-        import json
-
-        print(json.dumps(res))
-    else:
-        _print_results(res)
-    return 0
+            norm_mode = "none" if (hasattr(args, 'normalize') and args.normalize is False) else "match_means"
+        res = ndfunc(r, g, normalize=norm_mode, ddof=args.ddof, clip_nonneg=args.clip_nonneg)
+        if not args.quiet:
+            _print_results(res)
+            if "additivity_gap" in res:
+                print(f"additivity_gap: {res['additivity_gap']}")
+        else:
+            import json
+            print(json.dumps(res))
+        return 0
+    except Exception as e:
+        print(f"Error: {e}", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":
