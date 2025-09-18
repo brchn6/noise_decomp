@@ -21,3 +21,13 @@ dependencies = ["numpy>=1.20"]
 [project.optional-dependencies]
 test = ["pytest>=7"]
 
+[project.scripts]
+"noise-decomp" = "noise_decomp.cli:main"
+
+[tool.setuptools]
+packages = ["noise_decomp"]
+"package-dir" = {"" = "src"}
+
+[tool.setuptools.package-data]
+"noise_decomp" = ["../examples/*"]
+
