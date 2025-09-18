@@ -1,0 +1,4 @@
+dist
+.pytest_cache
+*/noise_decomp.egg-info/*
+**/.github
