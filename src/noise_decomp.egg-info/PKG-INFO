@@ -1,0 +1,44 @@
+Metadata-Version: 2.4
+Name: noise_decomp
+Version: 0.1.2
+Summary: Tiny dual-reporter intrinsic/extrinsic noise decomposition
+Author-email: brchn6 <brchn6@gmail.com>
+License: MIT
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Scientific/Engineering :: Bio-Informatics
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: numpy>=1.20
+Provides-Extra: test
+Requires-Dist: pytest>=7; extra == "test"
+
+# noise_decomp
+
+A **super small** Python package that implements the dual-reporter
+decomposition of **intrinsic** and **extrinsic** noise from paired
+single-cell measurements.
+
+## Install (editable)
+```bash
+pip install -e .
+```
+
+---
+## Usage
+``` python 
+from noise_decomp import noise_decomp
+
+res = noise_decomp(r, g)
+print(res)
+
+```
+
+---
+## References
+
+* Elowitz MB, Levine AJ, Siggia ED, Swain PS. Stochastic Gene Expression in a Single Cell. Science (2002).
+
+* Raser JM, O’Shea EK. Control of Stochasticity in Eukaryotic Gene Expression. Science (2004).
+
